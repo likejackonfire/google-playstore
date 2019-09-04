@@ -1,26 +1,46 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+const express = require('express');
+const app = express();
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const playstore = require('./playstore.js');
 
-export default App;
+
+
+app.get('/apps', (req, res) => {
+   const {sorting, genre} = req.query;
+
+   if(sorting) {
+    if(!['App', 'Rating'].includes(sorting)) {
+      return res
+        .status(400)
+        .send('Sort must be one of App or rating');
+    }
+  }
+
+   let results = playstore
+
+    if(sorting) {
+        results.sort((a, b) => {
+            return a[sorting] > b[sorting] ? 1 : a[sorting] < b[sorting] ? -1 : 0;
+        }); 
+        } 
+    
+    if(genre) {
+        if(!['Action', 'Arcade', 'Stragery', 'Casual', 'Arcade', 'Card'].includes(genre)){
+            return res 
+                .status(400)
+                .send('Must be a genre.')
+        }
+    }
+    if(genre){
+        results = results.filter(result => {
+            return result.Genres === genre
+        });
+    }
+
+    
+    res.send(results);
+  });
+
+  app.listen(8000, () => {
+    console.log('Server started on PORT 8000');
+});
